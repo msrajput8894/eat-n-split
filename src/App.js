@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { flushSync } from "react-dom";
+// import { flushSync } from "react-dom";
 import { FriendsList } from "./FriendsList";
 import { FormAddFriend } from "./FormAddFriend";
 import { FormSplitBill } from "./FormSplitBill";

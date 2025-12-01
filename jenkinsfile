@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    tools {
+      nodejs "NodeJs20"
+    }
 
     environment {
         // Netlify credentials stored in Jenkins

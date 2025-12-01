@@ -1,19 +1,14 @@
 pipeline {
     agent any
-    tools {
-      nodejs "NodeJs20"
-    }
 
     environment {
-        // Netlify credentials stored in Jenkins
-        NETLIFY_AUTH_TOKEN = credentials('netlifytoken')
+        NETLIFY_AUTH_TOKEN = credentials('netlify-access-token')
         NETLIFY_SITE_ID   = credentials('netlify-site-id')
         MAJOR = "1"
         MINOR = "0"
     }
 
     stages {
-
         stage('Checkout') {
             steps {
                 git branch: 'master',
@@ -27,15 +22,9 @@ pipeline {
                     def date = new Date()
                     def yy = date.format("yy")
                     def mm = date.format("MM")
-
-                    // Calculate week of month
                     def week = ((date.date - 1) / 7 + 1).toInteger()
-
-                    // Build number padded 5 digits
                     def num = String.format("%05d", env.BUILD_NUMBER.toInteger())
-
                     env.APP_VERSION = "${MAJOR}.${MINOR}.${yy}.${mm}.${week}.${num}"
-
                     echo "Generated Version: ${env.APP_VERSION}"
                 }
             }
@@ -43,20 +32,26 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh "npm install"         // for Node project
-                sh "npm run build"       // adapt based on your project
+                sh 'npm install'
+                sh 'npm run build'
             }
         }
 
         stage('Deploy to Netlify') {
             steps {
-                sh """
+                sh '''
+                    # Zip the build folder
+                    cd dist
+                    zip -r ../dist.zip .
+                    cd ..
+
+                    # Deploy via Netlify API
                     curl -X POST \\
-                    -H \"Authorization: Bearer $NETLIFY_AUTH_TOKEN\" \\
-                    -H \"Content-Type: application/zip\" \\
-                    --data-binary @./dist.zip \\
-                    https://api.netlify.com/api/v1/sites/$NETLIFY_SITE_ID/deploys
-                """
+                        -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" \\
+                        -H "Content-Type: application/zip" \\
+                        --data-binary @dist.zip \\
+                        https://api.netlify.com/api/v1/sites/$NETLIFY_SITE_ID/deploys
+                '''
                 echo 'Deployment triggered to Netlify.'
             }
         }
@@ -64,39 +59,10 @@ pipeline {
 
     post {
         success {
-            emailext (
-                subject: "SUCCESS: Build #${BUILD_NUMBER} (${APP_VERSION})",
-                body: """
-                Hi Mahi,
-
-                Your CI Pipeline executed successfully.
-
-                Build No: ${BUILD_NUMBER}
-                Version: ${APP_VERSION}
-                Status: SUCCESS
-                
-                Regards,
-                Jenkins
-                """,
-                to: "msrajput8894@example.com"
-            )
+            echo "Build and Deployment Successful!"
         }
         failure {
-            emailext (
-                subject: "FAILED: Build #${BUILD_NUMBER} (${APP_VERSION})",
-                body: """
-                Hi Mahi,
-
-                Your CI Pipeline FAILED.
-
-                Build No: ${BUILD_NUMBER}
-                Version: ${APP_VERSION}
-                Status: FAILED
-
-                Please review the logs.
-                """,
-                to: "msrajput8894@example.com"
-            )
+            echo "Build or Deployment Failed!"
         }
     }
 }

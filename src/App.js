@@ -25,7 +25,7 @@ export default function App() {
 
   function handleAddFriend(friend) {
     setFriends((friends) => [...friends, friend]);
-    console.log(friends);
+    //console.log(friends);
     setShowAddFriend(false);
   }
 

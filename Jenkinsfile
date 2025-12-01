@@ -55,10 +55,17 @@ pipeline {
     post {
         success {
             echo "Build and Deployment Successful!"
+            mail to: 'msrajput8894@example.com',
+                subject: "✅ Eat-N-Split Deployment SUCCESS - Build #${env.BUILD_NUMBER}",
+                body: "The deployment to Netlify was successful.\n\nBuild Version: ${env.APP_VERSION}\nJob: ${env.JOB_NAME}\nBuild Number: ${env.BUILD_NUMBER}\nCheck console output at: ${env.BUILD_URL}"
         }
         failure {
             echo "Build or Deployment Failed!"
             echo "Check the logs for more details."
+            mail to: 'msrajput8894@example.com',
+                subject: "❌ Eat-N-Split Deployment FAILURE - Build #${env.BUILD_NUMBER}",
+                body: "The deployment to Netlify has failed.\n\nBuild Version: ${env.APP_VERSION}\nJob: ${env.JOB_NAME}\nBuild Number: ${env.BUILD_NUMBER}\nCheck console output at: ${env.BUILD_URL}"
         }
     }
+
 }

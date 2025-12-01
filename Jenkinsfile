@@ -43,7 +43,7 @@ pipeline {
                     # Deploy to Netlify using npx (no global install needed)
                     npx netlify deploy \
                         --prod \
-                        --dir=dist \
+                        --dir=build \
                         --site=$NETLIFY_SITE_ID \
                         --auth=$NETLIFY_AUTH_TOKEN
                 '''

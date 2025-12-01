@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         NETLIFY_AUTH_TOKEN = credentials('netlify-access-token')
-        NETLIFY_SITE_ID   = credentials('netlify-site-id')
+        NETLIFY_SITE_ID    = credentials('netlify-site-id')
         MAJOR = "1"
         MINOR = "0"
     }
@@ -40,19 +40,14 @@ pipeline {
         stage('Deploy to Netlify') {
             steps {
                 sh '''
-                    # Zip the build folder
-                    cd dist
-                    zip -r ../dist.zip .
-                    cd ..
-
-                    # Deploy via Netlify API
-                    curl -X POST \\
-                        -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" \\
-                        -H "Content-Type: application/zip" \\
-                        --data-binary @dist.zip \\
-                        https://api.netlify.com/api/v1/sites/$NETLIFY_SITE_ID/deploys
+                    # Deploy to Netlify using npx (no global install needed)
+                    npx netlify deploy \
+                        --prod \
+                        --dir=dist \
+                        --site=$NETLIFY_SITE_ID \
+                        --auth=$NETLIFY_AUTH_TOKEN
                 '''
-                echo 'Deployment triggered to Netlify.'
+                echo 'Deployment completed to Netlify.'
             }
         }
     }
